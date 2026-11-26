@@ -1,0 +1,8 @@
+# SITE_ADDRESS 예: 141-164-10-20.sslip.io (자동 HTTPS) 또는 :80 (HTTP만)
+{$SITE_ADDRESS} {
+	encode gzip
+	request_body {
+		max_size 12MB
+	}
+	reverse_proxy api:8000
+}

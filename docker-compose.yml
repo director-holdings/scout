@@ -1,0 +1,56 @@
+# Scout 내부용 — 서버 1대에서 모두 실행
+# 설정값은 같은 폴더의 .env 파일 (설치 스크립트가 자동으로 만듦)
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: scout
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: scout
+    command: ["postgres", "-c", "shared_buffers=256MB", "-c", "max_connections=40"]
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U scout"]
+      interval: 5s
+      retries: 20
+
+  api:
+    build: { context: ., dockerfile: backend/Dockerfile }
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://scout:${DB_PASSWORD}@db:5432/scout
+    volumes:
+      - media:/data/media
+    depends_on:
+      db: { condition: service_healthy }
+
+  worker:
+    build: { context: ., dockerfile: backend/Dockerfile }
+    restart: unless-stopped
+    command: ["python", "-m", "app.worker"]
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://scout:${DB_PASSWORD}@db:5432/scout
+    volumes:
+      - media:/data/media
+    depends_on:
+      db: { condition: service_healthy }
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports: ["80:80", "443:443"]
+    environment:
+      SITE_ADDRESS: ${SITE_ADDRESS}
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddydata:/data
+    depends_on: [api]
+
+volumes:
+  dbdata:
+  media:
+  caddydata:

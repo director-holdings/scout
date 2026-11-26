@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Scout 로그인</title>
+<style>
+:root{color-scheme:light dark;--bg:light-dark(#fff,#0a0d18);--ink:light-dark(#0b0d12,#eef1fb);--mut:light-dark(#5b6275,#9aa3bd);--line:light-dark(#dfe3ee,#232a40);--acc:light-dark(#1240e0,#7b9bff)}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);font:15px/1.55 "Noto Sans KR",system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+.l{background:#1240e0;color:#fff;padding:48px;display:flex;flex-direction:column;justify-content:space-between}.l h1{font:700 40px/1.1 system-ui;margin:0}.l p{color:#dfe6ff;max-width:28ch}
+.r{display:grid;place-items:center;padding:32px}form{width:min(360px,100%);display:grid;gap:14px}label{display:grid;gap:6px;font-weight:600;font-size:14px}
+input{font:inherit;font-size:16px;min-height:46px;border:1px solid var(--line);border-radius:9px;padding:8px 12px;background:transparent;color:inherit}
+button{font:inherit;font-weight:700;min-height:46px;border:0;border-radius:9px;background:var(--acc);color:light-dark(#fff,#0a0d18);cursor:pointer}
+#err{color:#c2410c;min-height:1.5em;margin:0;font-weight:600}.m{color:var(--mut);font-size:13px}
+@media(max-width:760px){body{grid-template-columns:1fr}.l{padding:28px}.l h1{font-size:30px}}
+</style></head><body>
+<div class="l"><h1>Scout</h1><p>광고·SNS 레퍼런스를 함께 모으고 보는 팀 내부 도구</p></div>
+<div class="r"><form id="f"><h2 style="margin:0">로그인</h2>
+<label>이름<input name="name" required maxlength="20" autocomplete="name" placeholder="예: 김하늘"></label>
+<label>팀 비밀번호<input name="password" type="password" required autocomplete="current-password"></label>
+<p id="err" role="alert"></p><button>들어가기</button>
+<p class="m">비밀번호는 서버를 설치한 사람에게 물어보세요.</p></form></div>
+<script>
+const f=document.getElementById('f'),err=document.getElementById('err');
+try{f.name.value=localStorage.getItem('scout:name')||''}catch(e){}
+f.addEventListener('submit',async e=>{e.preventDefault();err.textContent='';
+ const r=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:f.name.value,password:f.password.value})}).catch(()=>null);
+ if(r&&r.ok){try{localStorage.setItem('scout:name',f.name.value)}catch(e){}location.href='/'}
+ else{const d=r?await r.json().catch(()=>({})):{};err.textContent=d.detail||'서버에 연결할 수 없어요'}});
+</script></body></html>
