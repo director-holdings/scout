@@ -17,6 +17,13 @@ die(){ printf '\n\033[1;31m✖ %s\033[0m\n' "$*"; exit 1; }
 [ "$(id -u)" = 0 ] || die "root 계정으로 실행해 주세요 (명령어 앞에 sudo 를 붙이거나 root로 로그인)"
 command -v apt-get >/dev/null || die "Ubuntu 또는 Debian 서버에서만 설치할 수 있어요"
 
+# 이미 다른 웹사이트가 80/443 포트를 쓰고 있으면 기존 서비스를 건드리지 않도록 멈춤
+if [ ! -d /opt/scout/.git ] && command -v ss >/dev/null && ss -tlnH '( sport = :80 or sport = :443 )' | grep -q . \
+   && [ "${SCOUT_FORCE:-}" != 1 ]; then
+  ss -tlnp '( sport = :80 or sport = :443 )'
+  die "이 서버는 이미 다른 프로그램이 웹 포트(80/443)를 쓰고 있어요. 기존 서비스를 지키기 위해 설치를 멈췄어요. 위 내용을 Claude에게 보내주세요"
+fi
+
 say "1/7 기본 프로그램 설치"
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -qq
