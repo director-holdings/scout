@@ -1,0 +1,14 @@
+# "함께 쓰기" 모드: 서버에 이미 Caddy 웹서버가 있을 때 사용 (install.sh가 자동 선택)
+# Scout 자체 Caddy는 끄고, api를 기존 Caddy의 Docker 네트워크에 'scout-api' 이름으로 연결
+services:
+  caddy:
+    profiles: ["standalone"]
+  api:
+    networks:
+      default: {}
+      proxy:
+        aliases: [scout-api]
+networks:
+  proxy:
+    external: true
+    name: ${PROXY_NET}
