@@ -185,7 +185,7 @@ systemctl enable --now scout-update.timer scout-backup.timer >/dev/null
 
 printf '서버가 켜지기를 기다리는 중'
 for i in $(seq 1 60); do
-  if docker compose exec -T api python -c "import urllib.request;urllib.request.urlopen('http://localhost:8000/healthz')" >/dev/null 2>&1; then OK=1; break; fi
+  if docker compose exec -T api python -c "import urllib.request;urllib.request.urlopen('http://localhost:8000/healthz')" >/dev/null 2>&1 </dev/null; then OK=1; break; fi
   printf '.'; sleep 5
 done
 echo

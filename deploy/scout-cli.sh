@@ -21,7 +21,7 @@ case "${1:-status}" in
   backup)
     mkdir -p /opt/scout-backups
     F=/opt/scout-backups/scout-$(date +%F).sql.gz
-    docker compose exec -T db pg_dump -U scout scout | gzip > "$F" && echo "백업: $F"
+    docker compose exec -T db pg_dump -U scout scout </dev/null | gzip > "$F" && echo "백업: $F"
     find /opt/scout-backups -name 'scout-*.sql.gz' -mtime +14 -delete ;;
   *)
     echo "사용법: scout [status|password|update|logs|backup|restart]" ;;
